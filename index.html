@@ -1,0 +1,212 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script>
+(function(){
+  var __k="a96e12e5-19ce-4475-afa2-2ee526d8d70e";
+  var __a=null;
+  var __c=null;
+  if(!__k&&!__c)return;
+  var _f=window.fetch;
+  function patchUrls(data){
+    if(!__a)return data;
+    try{
+      var s=JSON.stringify(data);
+      var keys=Object.keys(__a);
+      for(var i=0;i<keys.length;i++){s=s.split(keys[i]).join(__a[keys[i]]);}
+      return JSON.parse(s);
+    }catch(e){return data;}
+  }
+  window.fetch=function(url,opts){
+    var u=typeof url==="string"?url:String(url);
+    if(!u.startsWith("/api/notion/"))return _f.apply(this,arguments);
+    var path=u.slice("/api/notion".length);
+    var method=(opts&&opts.method)||"GET";
+    var body;
+    try{body=opts&&opts.body?JSON.parse(opts.body):undefined;}catch(e){body=opts&&opts.body;}
+    if(__c){
+      var ck=method+":"+path+":"+(body?JSON.stringify(body):"");
+      if(__c[ck]){
+        return Promise.resolve(new Response(JSON.stringify(patchUrls(__c[ck])),{
+          status:200,headers:{"Content-Type":"application/json"}
+        }));
+      }
+    }
+    if(!__k)return Promise.reject(new Error("no deploy key"));
+    return _f("https://misiso.com/api/notion/deploy-proxy",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({deployKey:__k,path:path,method:method,body:body})
+    }).then(function(r){
+      var status=r.status;
+      return r.json().then(function(data){
+        return new Response(JSON.stringify(patchUrls(data)),{
+          status:status,
+          headers:{"Content-Type":"application/json"}
+        });
+      });
+    });
+  };
+})();
+</script>
+<meta property="og:type" content="website"/>
+<meta property="og:title" content="Notion Code Preview"/>
+<meta property="og:description" content="Built with Notion Code Previewer"/>
+<meta property="og:image" content="https://nsdelaine.github.io/notion-preview-7935943a/og-image.png"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://nsdelaine.github.io/notion-preview-7935943a/og-image.png"/>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2032%2032'%3E%3Crect%20width%3D'32'%20height%3D'32'%20rx%3D'6'%20fill%3D'%25236366f1'%2F%3E%3Ctext%20x%3D'16'%20y%3D'22'%20text-anchor%3D'middle'%20font-size%3D'18'%20fill%3D'white'%20font-family%3D'sans-serif'%3EN%3C%2Ftext%3E%3C%2Fsvg%3E"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+/* app/globals.css */
+:root {
+  --bg: #f8f6f1;
+  --bg-card: #ffffff;
+  --surface: #f0ede6;
+  --text: #2c2420;
+  --text-dim: #7a7067;
+  --accent: #4a8c5c;
+  --accent-light: #e8f3eb;
+  --accent-dark: #3a7049;
+  --warm: #d4a259;
+  --warm-light: #fdf5e8;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow: 0 4px 24px rgba(44, 36, 32, .06);
+  --shadow-lg: 0 12px 40px rgba(44, 36, 32, .1);
+  --transition: .35s cubic-bezier(.4, 0, .2, 1);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); font-family: 'Noto Sans KR', -apple-system, sans-serif; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+img { max-width: 100%; display: block; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+a { color: inherit; text-decoration: none; }
+
+/* Nav */
+.nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; backdrop-filter: blur(16px); background: rgba(248, 246, 241, .85); border-bottom: 1px solid rgba(74, 140, 92, .1); }
+.nav-logo { font-size: 18px; font-weight: 800; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+.nav-links { display: flex; gap: 28px; }
+.nav-links button { font-size: 14px; color: var(--text-dim); font-weight: 500; transition: color var(--transition); }
+.nav-links button:hover { color: var(--accent); }
+.btn { padding: 10px 24px; border-radius: 99px; font-weight: 600; font-size: 14px; transition: all var(--transition); display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.btn-primary { background: var(--accent); color: #fff; box-shadow: 0 4px 16px rgba(74, 140, 92, .25); }
+.btn-primary:hover { background: var(--accent-dark); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(74, 140, 92, .3); }
+.btn-ghost { border: 1.5px solid var(--accent); color: var(--accent); }
+.btn-ghost:hover { background: var(--accent-light); }
+.btn-lg { padding: 14px 32px; font-size: 16px; }
+.btn-full { width: 100%; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* Hero */
+.hero { min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 120px 24px 80px; position: relative; overflow: hidden; background: linear-gradient(180deg, var(--accent-light) 0%, var(--bg) 100%); }
+.hero-inner { position: relative; max-width: 800px; }
+.hero-badge { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 99px; background: #fff; border: 1px solid rgba(74, 140, 92, .2); color: var(--accent); font-size: 13px; font-weight: 600; margin-bottom: 24px; box-shadow: var(--shadow); }
+.hero h1 { font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 900; line-height: 1.3; margin-bottom: 20px; letter-spacing: -.02em; }
+.hero h1 em { font-style: normal; color: var(--accent); }
+.hero-sub { color: var(--text-dim); font-size: 17px; margin-bottom: 36px; max-width: 560px; margin-left: auto; margin-right: auto; line-height: 1.8; }
+.hero-cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+/* Section */
+.sec { padding: 100px 24px; }
+.sec-alt { background: var(--surface); }
+.container { max-width: 1040px; margin: 0 auto; }
+.sec-label { display: block; text-transform: uppercase; letter-spacing: .12em; font-size: 12px; color: var(--accent); margin-bottom: 8px; font-weight: 700; }
+.sec-title { font-size: clamp(1.5rem, 3.5vw, 2.2rem); font-weight: 800; margin-bottom: 12px; letter-spacing: -.02em; }
+.sec-desc { color: var(--text-dim); font-size: 15px; }
+.sec-head { text-align: center; margin-bottom: 48px; }
+
+/* Features */
+.feat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.feat-card { background: var(--bg-card); border-radius: var(--radius); padding: 32px 24px; text-align: center; box-shadow: var(--shadow); border: 1px solid rgba(74, 140, 92, .06); transition: transform var(--transition), box-shadow var(--transition); }
+.feat-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+.feat-icon { font-size: 48px; margin-bottom: 16px; }
+.feat-title { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+.feat-desc { font-size: 14px; color: var(--text-dim); }
+
+/* Class cards */
+.cls-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+.cls-card { background: var(--bg-card); border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow); border: 1px solid rgba(74, 140, 92, .06); transition: transform var(--transition), box-shadow var(--transition); display: flex; gap: 20px; align-items: flex-start; }
+.cls-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+.cls-emoji { font-size: 40px; flex-shrink: 0; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; border-radius: 16px; background: var(--accent-light); }
+.cls-body { flex: 1; }
+.cls-name { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+.cls-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.cls-tag { font-size: 11px; padding: 3px 10px; border-radius: 99px; font-weight: 600; }
+.cls-tag-grade { background: var(--accent-light); color: var(--accent); }
+.cls-tag-time { background: var(--warm-light); color: #b08830; }
+.cls-desc { font-size: 14px; color: var(--text-dim); }
+
+/* Reviews */
+.rev-stats { display: flex; gap: 32px; justify-content: center; padding: 24px; margin-bottom: 40px; background: var(--bg-card); border-radius: var(--radius); box-shadow: var(--shadow); flex-wrap: wrap; }
+.stat { text-align: center; }
+.stat-value { font-size: 28px; font-weight: 800; color: var(--accent); }
+.stat-label { font-size: 12px; color: var(--text-dim); }
+.rev-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+.rev-card { background: var(--bg-card); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); border: 1px solid rgba(74, 140, 92, .06); transition: transform var(--transition); }
+.rev-card:hover { transform: translateY(-2px); }
+.rev-stars { color: var(--warm); margin-bottom: 12px; font-size: 16px; letter-spacing: 2px; }
+.rev-quote { font-size: 14px; line-height: 1.8; margin-bottom: 16px; color: var(--text); }
+.rev-foot { display: flex; align-items: center; gap: 10px; }
+.avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+.rev-name { font-size: 13px; font-weight: 600; }
+.rev-date { font-size: 12px; color: var(--text-dim); }
+
+/* Form */
+.form-wrap { max-width: 560px; margin: 0 auto; }
+.form { background: var(--bg-card); padding: 36px; border-radius: var(--radius); box-shadow: var(--shadow); }
+.form-group { margin-bottom: 20px; }
+.form-label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text); }
+.form-input, .form-textarea { width: 100%; padding: 12px 16px; background: var(--bg); border: 1.5px solid rgba(74, 140, 92, .15); border-radius: var(--radius-sm); color: var(--text); font-size: 14px; font-family: inherit; transition: border-color var(--transition); }
+.form-input:focus, .form-textarea:focus { outline: none; border-color: var(--accent); background: #fff; }
+.form-textarea { min-height: 100px; resize: vertical; }
+.stars-input { display: flex; gap: 6px; }
+.star-btn { font-size: 28px; color: #ddd; transition: color var(--transition), transform var(--transition); }
+.star-btn:hover, .star-btn.on { color: var(--warm); transform: scale(1.1); }
+.form-error { color: #d44; font-size: 13px; margin-top: 8px; }
+.form-success { text-align: center; padding: 48px 0; }
+.form-success h3 { font-size: 20px; font-weight: 800; margin: 12px 0 8px; }
+.form-success p { color: var(--text-dim); margin-bottom: 24px; }
+.success-emoji { font-size: 48px; }
+
+/* Footer */
+.footer { padding: 48px 24px; text-align: center; background: var(--surface); border-top: 1px solid rgba(74, 140, 92, .08); }
+.footer-brand { font-size: 18px; font-weight: 800; color: var(--accent); margin-bottom: 12px; }
+.footer-info { font-size: 13px; color: var(--text-dim); line-height: 1.8; margin-bottom: 16px; }
+.footer-copy { font-size: 12px; color: var(--text-dim); }
+
+/* Loader */
+.loader { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 60px 0; color: var(--text-dim); }
+.spinner { width: 28px; height: 28px; border: 3px solid rgba(74, 140, 92, .2); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.empty { text-align: center; padding: 48px 0; color: var(--text-dim); }
+
+/* Anim */
+.anim { opacity: 0; transform: translateY(24px); transition: opacity .7s ease, transform .7s ease; }
+.anim.in { opacity: 1; transform: translateY(0); }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .nav-links { display: none; }
+  .sec { padding: 64px 16px; }
+  .hero { padding: 100px 16px 64px; }
+  .hero-cta { flex-direction: column; }
+  .hero-cta .btn { width: 100%; }
+  .feat-grid { grid-template-columns: 1fr; }
+  .cls-grid { grid-template-columns: 1fr; }
+  .rev-grid { grid-template-columns: 1fr; }
+  .cls-card { flex-direction: column; align-items: stretch; }
+  .form { padding: 24px; }
+  .rev-stats { gap: 16px; padding: 16px; }
+}
+</style>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script>if(window.Babel)Babel.disableScriptTags=true;</script>
+</head><body><div id="root"></div><script type="module">
+var __stripPlugin=function(){return{visitor:{ImportDeclaration:function(path){var src=path.node.source.value;if(src.indexOf("./")===0||src.indexOf("../")===0)path.remove();},ExportDefaultDeclaration:function(path){var decl=path.node.declaration;if(decl.type==="FunctionDeclaration"||decl.type==="ClassDeclaration"){path.replaceWith(decl);}else{path.replaceWith({type:"VariableDeclaration",kind:"var",declarations:[{type:"VariableDeclarator",id:{type:"Identifier",name:"_default"},init:decl}]});}},ExportNamedDeclaration:function(path){if(path.node.declaration){path.replaceWith(path.node.declaration);}else{path.remove();}},ExportAllDeclaration:function(path){path.remove();}}};};
+var __dedupePlugin=function(){var _s={};return{visitor:{VariableDeclaration:function(p){if(p.parent.type!=="Program")return;if(p.node.kind!=="const"&&p.node.kind!=="let")return;var kept=[];for(var i=0;i<p.node.declarations.length;i++){var d=p.node.declarations[i];var n=d.id&&d.id.type==="Identifier"?d.id.name:null;if(n&&_s[n]){}else{if(n)_s[n]=true;kept.push(d);}}if(kept.length===0){p.remove();}else{p.node.declarations=kept;}}}}};
+var __jsxDecodePlugin=function(){function _d(v){v=v.replace(/\\u\{([0-9a-fA-F]+)\}/g,function(_,h){return String.fromCodePoint(parseInt(h,16));});v=v.replace(/\\u([0-9a-fA-F]{4})/g,function(_,h){return String.fromCharCode(parseInt(h,16));});return v;}return{visitor:{JSXText:function(p){p.node.value=_d(p.node.value);},StringLiteral:function(p){if(!p.parent||p.parent.type!=="JSXAttribute")return;p.node.value=_d(p.node.value);}}}};
+var __code="import React from 'https://esm.sh/react';\nimport ReactDOM from 'https://esm.sh/react-dom/client';\nimport { useState, useEffect, useMemo } from 'https://esm.sh/react';\n\n// === Notion DB IDs ===\nconst DB_CLASSES = 'f862ff8fef944c1a9321c411359e7553';\nconst DB_REVIEWS = '2a44bee4900a4fb1ab4c28940709e28b';\nconst DB_INQUIRIES = 'd758756659f940299a3815c9a8b80007';\n\n// === Utils ===\nfunction rtText(rt) { return Array.isArray(rt) ? rt.map(t => t.plain_text).join('') : ''; }\nfunction getProp(p, key) {\n  const v = p?.properties?.[key];\n  if (!v) return '';\n  switch (v.type) {\n    case 'title': return rtText(v.title);\n    case 'rich_text': return rtText(v.rich_text);\n    case 'number': return v.number;\n    case 'select': return v.select?.name || '';\n    case 'multi_select': return v.multi_select.map(s => s.name);\n    case 'date': return v.date?.start || '';\n    case 'checkbox': return v.checkbox;\n    case 'phone_number': return v.phone_number || '';\n    default: return '';\n  }\n}\nfunction starCount(s) { return (String(s).match(/⭐/g) || []).length || 5; }\n\n// === Fallback Data ===\nconst FB_CLASSES = [\n  { id:'c1', name:'파닉스 기초반', grade:'초1~2', time:'월·수·금 15:00~16:00', desc:'알파벳부터 파닉스 규칙까지, 영어 첫걸음을 함께합니다', icon:'🔤' },\n  { id:'c2', name:'리딩 탐험반', grade:'초3~4', time:'화·목 16:00~17:00', desc:'레벨별 리딩 교재로 독해력과 어휘력을 키워요', icon:'📖' },\n  { id:'c3', name:'그래머 마스터반', grade:'초5~6', time:'월·수·금 17:00~18:00', desc:'중학 대비 문법 완성! 체계적인 영문법 수업', icon:'✏️' },\n  { id:'c4', name:'중등 내신 집중반', grade:'중등', time:'화·목·토 18:00~19:30', desc:'교과서 분석 + 내신 기출 + 서술형 대비 올인원', icon:'🎯' },\n];\nconst FB_REVIEWS = [\n  { id:'r1', name:'김서현 어머니', stars:5, text:'파닉스 기초반 3개월 다녔는데, 아이가 영어 읽는 재미를 알기 시작했어요.', date:'2026-04-10' },\n  { id:'r2', name:'박지민 어머니', stars:5, text:'리딩 탐험반 수업 후 아이 독해력이 눈에 띄게 늘었어요. 매일 영어책 읽겠다고 합니다.', date:'2026-04-05' },\n  { id:'r3', name:'이은지 어머니', stars:4, text:'그래머 마스터반 덕분에 문법이 많이 정리됐대요. 중학교 올라가기 전에 든든합니다.', date:'2026-03-28' },\n  { id:'r4', name:'최준혁 아버지', stars:5, text:'중등 내신반 다니고 영어 성적이 확 올랐어요. 서술형 대비도 꼼꼼하게 해주셔서 만족합니다.', date:'2026-04-15' },\n];\n\nconst GRADE_ICONS = { '초1~2':'🔤', '초3~4':'📖', '초5~6':'✏️', '중등':'🎯' };\n\n// === Scroll Animation ===\nfunction useAnim() {\n  useEffect(() => {\n    const io = new IntersectionObserver(entries => {\n      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });\n    }, { threshold: 0.1 });\n    document.querySelectorAll('.anim:not(.in)').forEach(el => io.observe(el));\n    return () => io.disconnect();\n  });\n}\n\n// === Nav ===\nfunction Nav({ scrollTo }) {\n  return (\n    <nav className=\"nav\">\n      <div className=\"nav-logo\">🏫 뮤엠영어 양평점</div>\n      <div className=\"nav-links\">\n        <button onClick={() => scrollTo('about')}>학원 소개</button>\n        <button onClick={() => scrollTo('classes')}>수업 안내</button>\n        <button onClick={() => scrollTo('reviews')}>학부모 후기</button>\n        <button onClick={() => scrollTo('inquiry')}>문의하기</button>\n      </div>\n      <button className=\"btn btn-primary\" onClick={() => scrollTo('inquiry')}>📞 상담 문의</button>\n    </nav>\n  );\n}\n\n// === Hero ===\nfunction Hero({ scrollTo }) {\n  return (\n    <section className=\"hero\">\n      <div className=\"hero-inner\">\n        <div className=\"hero-badge\">📍 경기도 양평군</div>\n        <h1>아이의 영어 자신감,<br /><em>뮤엠영어 양평점</em>에서<br />시작됩니다.</h1>\n        <p className=\"hero-sub\">파닉스부터 중등 내신까지, 체계적인 커리큘럼과 소수정예 수업으로 아이 한 명 한 명에게 맞춘 영어 교육을 제공합니다.</p>\n        <div className=\"hero-cta\">\n          <button className=\"btn btn-primary btn-lg\" onClick={() => scrollTo('classes')}>📚 수업 둘러보기</button>\n          <button className=\"btn btn-ghost btn-lg\" onClick={() => scrollTo('inquiry')}>📞 상담 문의</button>\n        </div>\n      </div>\n    </section>\n  );\n}\n\n// === About ===\nfunction About() {\n  const feats = [\n    { icon:'👩‍🏫', title:'소수정예 맞춤 수업', desc:'학생 개개인의 수준에 맞춘 밀착 지도로 빠른 실력 향상을 도와요.' },\n    { icon:'📊', title:'체계적인 커리큘럼', desc:'파닉스 → 리딩 → 문법 → 내신, 단계별로 탄탄하게 쌓아갑니다.' },\n    { icon:'💬', title:'학부모 소통 중심', desc:'정기 상담과 수업 피드백으로 가정과 함께 성장하는 교육을 합니다.' },\n  ];\n  return (\n    <section id=\"about\" className=\"sec\">\n      <div className=\"container\">\n        <div className=\"sec-head anim\">\n          <span className=\"sec-label\">About Us</span>\n          <h2 className=\"sec-title\">뮤엠영어 양평점을 소개합니다</h2>\n          <p className=\"sec-desc\">10년 이상의 영어 교육 노하우로 아이들의 영어 자신감을 키워드립니다.</p>\n        </div>\n        <div className=\"feat-grid\">\n          {feats.map(f => (\n            <div key={f.title} className=\"feat-card anim\">\n              <div className=\"feat-icon\">{f.icon}</div>\n              <div className=\"feat-title\">{f.title}</div>\n              <div className=\"feat-desc\">{f.desc}</div>\n            </div>\n          ))}\n        </div>\n      </div>\n    </section>\n  );\n}\n\n// === Classes ===\nfunction Classes() {\n  const [items, setItems] = useState(FB_CLASSES);\n  const [loading, setLoading] = useState(true);\n\n  useEffect(() => {\n    fetch('/api/notion/databases/' + DB_CLASSES + '/query', {\n      method: 'POST',\n      headers: { 'Content-Type': 'application/json' },\n      body: JSON.stringify({ page_size: 20 }),\n    })\n      .then(r => r.json())\n      .then(data => {\n        const results = data.results || [];\n        if (results.length) {\n          setItems(results.map(p => {\n            const grade = getProp(p, '대상 학년');\n            return {\n              id: p.id,\n              name: getProp(p, '수업명'),\n              grade,\n              time: getProp(p, '요일·시간'),\n              desc: getProp(p, '한 줄 설명'),\n              icon: GRADE_ICONS[grade] || '📚',\n            };\n          }));\n        }\n      })\n      .catch(() => {})\n      .finally(() => setLoading(false));\n  }, []);\n\n  return (\n    <section id=\"classes\" className=\"sec sec-alt\">\n      <div className=\"container\">\n        <div className=\"sec-head anim\">\n          <span className=\"sec-label\">Programs</span>\n          <h2 className=\"sec-title\">수업 안내</h2>\n          <p className=\"sec-desc\">레벨에 맞는 과정을 선택하세요. 상담을 통해 최적의 반을 추천해 드립니다.</p>\n        </div>\n        {loading ? (\n          <div className=\"loader\"><div className=\"spinner\" /><div>수업 정보를 불러오는 중…</div></div>\n        ) : items.length === 0 ? (\n          <div className=\"empty\">아직 등록된 수업이 없습니다.</div>\n        ) : (\n          <div className=\"cls-grid\">\n            {items.map(c => (\n              <div key={c.id} className=\"cls-card anim\">\n                <div className=\"cls-emoji\">{c.icon}</div>\n                <div className=\"cls-body\">\n                  <div className=\"cls-name\">{c.name}</div>\n                  <div className=\"cls-meta\">\n                    <span className=\"cls-tag cls-tag-grade\">{c.grade}</span>\n                    <span className=\"cls-tag cls-tag-time\">🕐 {c.time}</span>\n                  </div>\n                  <div className=\"cls-desc\">{c.desc}</div>\n                </div>\n              </div>\n            ))}\n          </div>\n        )}\n      </div>\n    </section>\n  );\n}\n\n// === Reviews ===\nfunction Reviews() {\n  const [items, setItems] = useState(FB_REVIEWS);\n  const [loading, setLoading] = useState(true);\n\n  useEffect(() => {\n    fetch('/api/notion/databases/' + DB_REVIEWS + '/query', {\n      method: 'POST',\n      headers: { 'Content-Type': 'application/json' },\n      body: JSON.stringify({\n        page_size: 20,\n        filter: { property: '공개 여부', checkbox: { equals: true } },\n        sorts: [{ property: '작성일', direction: 'descending' }],\n      }),\n    })\n      .then(r => r.json())\n      .then(data => {\n        const results = data.results || [];\n        if (results.length) {\n          setItems(results.map(p => ({\n            id: p.id,\n            name: getProp(p, '작성자명'),\n            stars: starCount(getProp(p, '별점')),\n            text: getProp(p, '후기 내용'),\n            date: getProp(p, '작성일'),\n          })));\n        }\n      })\n      .catch(() => {})\n      .finally(() => setLoading(false));\n  }, []);\n\n  const avg = useMemo(() => items.length ? (items.reduce((s, r) => s + r.stars, 0) / items.length).toFixed(1) : '0', [items]);\n\n  return (\n    <section id=\"reviews\" className=\"sec\">\n      <div className=\"container\">\n        <div className=\"sec-head anim\">\n          <span className=\"sec-label\">Reviews</span>\n          <h2 className=\"sec-title\">학부모님들의 생생한 후기</h2>\n          <p className=\"sec-desc\">뮤엠영어 양평점을 먼저 경험한 학부모님들의 이야기입니다.</p>\n        </div>\n        <div className=\"rev-stats anim\">\n          <div className=\"stat\"><div className=\"stat-value\">★ {avg}</div><div className=\"stat-label\">평균 별점</div></div>\n          <div className=\"stat\"><div className=\"stat-value\">{items.length}</div><div className=\"stat-label\">전체 후기</div></div>\n        </div>\n        {loading ? (\n          <div className=\"loader\"><div className=\"spinner\" /><div>후기를 불러오는 중…</div></div>\n        ) : items.length === 0 ? (\n          <div className=\"empty\">아직 등록된 후기가 없습니다.</div>\n        ) : (\n          <div className=\"rev-grid\">\n            {items.map(r => (\n              <div key={r.id} className=\"rev-card anim\">\n                <div className=\"rev-stars\">{'★'.repeat(r.stars)}{'☆'.repeat(5 - r.stars)}</div>\n                <p className=\"rev-quote\">\"{r.text}\"</p>\n                <div className=\"rev-foot\">\n                  <div className=\"avatar\">{(r.name || '?')[0]}</div>\n                  <div>\n                    <div className=\"rev-name\">{r.name}</div>\n                    <div className=\"rev-date\">{r.date}</div>\n                  </div>\n                </div>\n              </div>\n            ))}\n          </div>\n        )}\n      </div>\n    </section>\n  );\n}\n\n// === Review Form ===\nfunction ReviewForm() {\n  const [name, setName] = useState('');\n  const [stars, setStars] = useState(5);\n  const [text, setText] = useState('');\n  const [status, setStatus] = useState('idle');\n\n  const submit = async (e) => {\n    e.preventDefault();\n    if (!name.trim() || !text.trim()) return;\n    setStatus('loading');\n    try {\n      const res = await fetch('/api/notion/pages', {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify({\n          parent: { database_id: DB_REVIEWS },\n          properties: {\n            '작성자명': { title: [{ text: { content: name } }] },\n            '별점': { select: { name: '⭐'.repeat(stars) } },\n            '후기 내용': { rich_text: [{ text: { content: text } }] },\n            '작성일': { date: { start: new Date().toISOString().slice(0, 10) } },\n            '공개 여부': { checkbox: false },\n          },\n        }),\n      });\n      if (!res.ok) throw new Error();\n      setStatus('success');\n    } catch {\n      setStatus('error');\n    }\n  };\n\n  if (status === 'success') {\n    return (\n      <section className=\"sec sec-alt\">\n        <div className=\"container\">\n          <div className=\"form-wrap\">\n            <div className=\"form\">\n              <div className=\"form-success\">\n                <div className=\"success-emoji\">✅</div>\n                <h3>후기가 접수되었습니다!</h3>\n                <p>소중한 의견 감사합니다. 검토 후 공개됩니다.</p>\n                <button className=\"btn btn-ghost\" onClick={() => { setStatus('idle'); setName(''); setText(''); setStars(5); }}>다른 후기 작성</button>\n              </div>\n            </div>\n          </div>\n        </div>\n      </section>\n    );\n  }\n\n  return (\n    <section className=\"sec sec-alt\">\n      <div className=\"container\">\n        <div className=\"sec-head anim\">\n          <span className=\"sec-label\">Write a Review</span>\n          <h2 className=\"sec-title\">후기를 남겨주세요 ✍️</h2>\n          <p className=\"sec-desc\">수업에 대한 솔직한 후기를 남겨주시면 큰 힘이 됩니다.</p>\n        </div>\n        <div className=\"form-wrap\">\n          <form className=\"form anim\" onSubmit={submit}>\n            <div className=\"form-group\">\n              <label className=\"form-label\">작성자명 *</label>\n              <input className=\"form-input\" value={name} onChange={e => setName(e.target.value)} placeholder=\"예: 홍길동 어머니\" required />\n            </div>\n            <div className=\"form-group\">\n              <label className=\"form-label\">별점 *</label>\n              <div className=\"stars-input\">\n                {[1,2,3,4,5].map(n => (\n                  <button type=\"button\" key={n} className={'star-btn ' + (stars >= n ? 'on' : '')} onClick={() => setStars(n)}>★</button>\n                ))}\n              </div>\n            </div>\n            <div className=\"form-group\">\n              <label className=\"form-label\">후기 내용 *</label>\n              <textarea className=\"form-textarea\" value={text} onChange={e => setText(e.target.value)} placeholder=\"수업에 대한 솔직한 후기를 남겨주세요.\" required />\n            </div>\n            {status === 'error' && <div className=\"form-error\">⚠ 전송에 실패했습니다. 다시 시도해주세요.</div>}\n            <button type=\"submit\" className=\"btn btn-primary btn-lg btn-full\" disabled={status === 'loading'}>\n              {status === 'loading' ? '제출 중…' : '후기 제출하기'}\n            </button>\n          </form>\n        </div>\n      </div>\n    </section>\n  );\n}\n\n// === Inquiry Form ===\nfunction InquiryForm() {\n  const [name, setName] = useState('');\n  const [phone, setPhone] = useState('');\n  const [text, setText] = useState('');\n  const [status, setStatus] = useState('idle');\n\n  const submit = async (e) => {\n    e.preventDefault();\n    if (!name.trim() || !phone.trim() || !text.trim()) return;\n    setStatus('loading');\n    try {\n      const res = await fetch('/api/notion/pages', {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify({\n          parent: { database_id: DB_INQUIRIES },\n          properties: {\n            '학부모명': { title: [{ text: { content: name } }] },\n            '연락처': { phone_number: phone },\n            '문의 내용': { rich_text: [{ text: { content: text } }] },\n          },\n        }),\n      });\n      if (!res.ok) throw new Error();\n      setStatus('success');\n    } catch {\n      setStatus('error');\n    }\n  };\n\n  if (status === 'success') {\n    return (\n      <section id=\"inquiry\" className=\"sec\">\n        <div className=\"container\">\n          <div className=\"form-wrap\">\n            <div className=\"form\">\n              <div className=\"form-success\">\n                <div className=\"success-emoji\">📬</div>\n                <h3>문의가 접수되었습니다!</h3>\n                <p>빠른 시일 내에 연락드리겠습니다.</p>\n                <button className=\"btn btn-ghost\" onClick={() => { setStatus('idle'); setName(''); setPhone(''); setText(''); }}>다른 문의 작성</button>\n              </div>\n            </div>\n          </div>\n        </div>\n      </section>\n    );\n  }\n\n  return (\n    <section id=\"inquiry\" className=\"sec\">\n      <div className=\"container\">\n        <div className=\"sec-head anim\">\n          <span className=\"sec-label\">Contact Us</span>\n          <h2 className=\"sec-title\">상담 및 문의 📩</h2>\n          <p className=\"sec-desc\">궁금한 점이 있으시면 언제든 문의해 주세요. 빠르게 답변 드리겠습니다.</p>\n        </div>\n        <div className=\"form-wrap\">\n          <form className=\"form anim\" onSubmit={submit}>\n            <div className=\"form-group\">\n              <label className=\"form-label\">학부모명 *</label>\n              <input className=\"form-input\" value={name} onChange={e => setName(e.target.value)} placeholder=\"예: 홍길동\" required />\n            </div>\n            <div className=\"form-group\">\n              <label className=\"form-label\">연락처 *</label>\n              <input className=\"form-input\" type=\"tel\" value={phone} onChange={e => setPhone(e.target.value)} placeholder=\"예: 010-1234-5678\" required />\n            </div>\n            <div className=\"form-group\">\n              <label className=\"form-label\">문의 내용 *</label>\n              <textarea className=\"form-textarea\" value={text} onChange={e => setText(e.target.value)} placeholder=\"궁금한 점이나 상담 희망 내용을 적어주세요.\" required />\n            </div>\n            {status === 'error' && <div className=\"form-error\">⚠ 전송에 실패했습니다. 다시 시도해주세요.</div>}\n            <button type=\"submit\" className=\"btn btn-primary btn-lg btn-full\" disabled={status === 'loading'}>\n              {status === 'loading' ? '전송 중…' : '문의하기'}\n            </button>\n          </form>\n        </div>\n      </div>\n    </section>\n  );\n}\n\n// === Footer ===\nfunction FooterSection() {\n  return (\n    <footer className=\"footer\">\n      <div className=\"footer-brand\">🏫 뮤엠영어 양평점</div>\n      <div className=\"footer-info\">\n        경기도 양평군 양평읍 ··· | 📞 031-000-0000<br />\n        운영시간: 월~금 14:00~21:00 | 토 10:00~17:00\n      </div>\n      <div className=\"footer-copy\">© 2026 뮤엠영어 양평점. All rights reserved.</div>\n    </footer>\n  );\n}\n\n// === App ===\nfunction App() {\n  useAnim();\n  const scrollTo = (id) => {\n    const el = document.getElementById(id);\n    if (el) el.scrollIntoView({ behavior: 'smooth' });\n  };\n\n  return (\n    <>\n      <Nav scrollTo={scrollTo} />\n      <Hero scrollTo={scrollTo} />\n      <About />\n      <Classes />\n      <Reviews />\n      <ReviewForm />\n      <InquiryForm />\n      <FooterSection />\n    </>\n  );\n}\n\nReactDOM.createRoot(document.getElementById('root')).render(<App />);";
+var __result=Babel.transform(__code,{filename:"app.tsx",presets:["react","typescript"],plugins:[__stripPlugin,__dedupePlugin,__jsxDecodePlugin],generatorOpts:{jsescOption:{minimal:true}},sourceType:"module"});
+var __s=document.createElement("script");__s.type="module";__s.textContent=__result.code;document.head.appendChild(__s);
+</script>
+</body></html>
